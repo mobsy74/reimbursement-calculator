@@ -1,18 +1,20 @@
 import datetime
 
 ONE_DAY = datetime.timedelta(days=1)
-RATE_VALUES = {
+
+RATE_CODE_VALUES = {
     'h': 'HIGH COST',
-    'l': 'LOW COST'
+    'l': 'LOW COST',
+    't': 'TRAVEL DAY',
+    'f': 'FULL DAY'
 }
 
-
-class WorkDay:
-    def __init__(self, date, cost, travel_status, rate):
-        self.date = date
-        self.cost = cost
-        self.travel_status = travel_status
-        self.rate = rate
+REIMBURSEMENT_CODES = {
+    'lt': 45,
+    'ht': 55,
+    'lf': 75,
+    'hf': 85
+}
 
 
 def validate_date(date_str):
@@ -28,14 +30,14 @@ def validate_date(date_str):
     return converted_date
 
 
-def validate_rate(rate_str):
-    rate_value = None
-    if rate_str.lower() in ('h', 'l'):
-        rate_value = RATE_VALUES[rate_str.lower()]
+def validate_cost(cost_str):
+    cost_value = None
+    if cost_str.lower() in ('h', 'l'):
+        cost_value = cost_str.lower()
     else:
-        print('Oops!  Please enter project rates in the format "H", "h", "L", or "l".')
+        print('Oops!  Please enter project location costs in the format "H", "h", "L", or "l".')
         print('')
-    return rate_value
+    return cost_value
 
 
 input_done = False
@@ -61,22 +63,22 @@ while not input_done:
         if end_date is not None:
             end_date_valid = True
 
-    rate_valid = False
-    while not rate_valid:
-        rate_input = input("Enter the project rate. (H/h for High Cost or L/l for Low Cost): ")
-        rate = validate_rate(rate_input)
-        if rate is not None:
-            rate_valid = True
+    cost_valid = False
+    while not cost_valid:
+        cost_input = input("Enter the project location cost. (H/h for High Cost or L/l for Low Cost): ")
+        cost = validate_cost(cost_input)
+        if cost is not None:
+            cost_valid = True
 
-    print('')
-    print('Project record entered -> (Start: ' + start_date.strftime('%m/%d/%Y') + ' End: ' + end_date.strftime('%m/%d/%Y') + ' Rate: ' + rate + ')')
-    print('')
+    # print('')
+    # print('Project record entered -> (Start: ' + start_date.strftime('%m/%d/%Y') + ' End: ' + end_date.strftime('%m/%d/%Y') + ' Location cost: ' + RATE_CODE_VALUES[cost] + ')')
+    # print('')
 
     # project_records.append((start_date, end_date, rate))
 
     work_date = start_date
     while work_date <= end_date:
-        if rate == RATE_VALUES['h']:
+        if cost == 'h':
             high_cost_dates.append(work_date)
         else:
             low_cost_dates.append(work_date)
@@ -84,7 +86,7 @@ while not input_done:
 
     input_done_valid = False
     while not input_done_valid:
-        user_done_input = input("Would you like to enter another project record? (Y/y for Yes or N/n for No): ")
+        user_done_input = input("Would you like to enter another project? (Y/y for Yes or N/n for No): ")
         if user_done_input.lower() == 'y':
             input_done_valid = True
             input_done = False
@@ -96,36 +98,48 @@ while not input_done:
             print('Oops!  Please enter your response in the format "Y", "y", "N", or "n".')
             print('')
 
-print(low_cost_dates)
-print(high_cost_dates)
+# print(low_cost_dates)
+# print(high_cost_dates)
 
 # Remove duplicates and keep HIGH COST days when there is an overlap
 all_dates_and_rates = []
 for date in high_cost_dates:
-    record = (date, RATE_VALUES['h'])
+    record = (date, 'h')
     if record not in all_dates_and_rates:
         all_dates_and_rates.append(record)
 for date in low_cost_dates:
-    record = (date, RATE_VALUES['l'])
+    record = (date, 'l')
     if date not in high_cost_dates and record not in all_dates_and_rates:
         all_dates_and_rates.append(record)
 
 # Sort the de-duped list
 sorted_dates = sorted(all_dates_and_rates, key=lambda x: x[0])
-print(sorted_dates)
+# print(sorted_dates)
 
-print(sorted_dates[0][0])
 # Search for gaps to determine extra travel days
-sorted_dates[0] = sorted_dates[0] + ('Travel',)
-sorted_dates[len(sorted_dates) - 1] = sorted_dates[len(sorted_dates) - 1] + ('Travel',)
-
-for i in range(len(sorted_dates) - 1):
+for i in range(len(sorted_dates)):
     if i == 0 or i == len(sorted_dates) - 1:
-        sorted_dates[i] = sorted_dates[i] + ('Travel',)
+        sorted_dates[i] = sorted_dates[i] + ('t',)
     else:
         current_work_day = sorted_dates[i][0]
+        previous_day = current_work_day - ONE_DAY
         next_day = current_work_day + ONE_DAY
+        previous_work_day = sorted_dates[i-1][0]
         next_work_day = sorted_dates[i+1][0]
-        if next_work_day != next_day:
-            sorted_dates[i]
-            sorted_dates[i + 1]
+        if next_work_day != next_day or previous_work_day != previous_day:
+            sorted_dates[i] = sorted_dates[i] + ('t',)
+        else:
+            sorted_dates[i] = sorted_dates[i] + ('f',)
+# print(sorted_dates)
+
+print('')
+total_reimbursement = 0
+
+for date in sorted_dates:
+    reimbursement_code = date[1] + date[2]
+    daily_reimbursement = REIMBURSEMENT_CODES[reimbursement_code]
+    print(date[0].strftime('%m/%d/%Y') + ' was a ' + RATE_CODE_VALUES[date[2]] + ' in a ' + RATE_CODE_VALUES[date[1]] + ' city and is reimbursed at $' + str(daily_reimbursement) + '/day.')
+    total_reimbursement += daily_reimbursement
+
+print('')
+print('The total reimbursement for this set of projects is $' + str(total_reimbursement) + '.')
