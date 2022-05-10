@@ -53,3 +53,12 @@ if workingDateRange.__contains__(get_date(out_date_str)):
     print("it's in!")
 else:
     print("nope")
+
+tup1 = (datetime.datetime.strptime(in_date_str, '%m/%d/%y').date(), 1)
+print(tup1)
+
+third_element = ('Travel',)
+
+tup2 = tup1 + third_element
+print(tup2)
+

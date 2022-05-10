@@ -1,10 +1,19 @@
 import datetime
 
 ONE_DAY = datetime.timedelta(days=1)
-rate_values = {
+RATE_VALUES = {
     'h': 'HIGH COST',
     'l': 'LOW COST'
 }
+
+
+class WorkDay:
+    def __init__(self, date, cost, travel_status, rate):
+        self.date = date
+        self.cost = cost
+        self.travel_status = travel_status
+        self.rate = rate
+
 
 def validate_date(date_str):
     converted_date = None
@@ -22,7 +31,7 @@ def validate_date(date_str):
 def validate_rate(rate_str):
     rate_value = None
     if rate_str.lower() in ('h', 'l'):
-        rate_value = rate_values[rate_str.lower()]
+        rate_value = RATE_VALUES[rate_str.lower()]
     else:
         print('Oops!  Please enter project rates in the format "H", "h", "L", or "l".')
         print('')
@@ -67,7 +76,7 @@ while not input_done:
 
     work_date = start_date
     while work_date <= end_date:
-        if rate == rate_values['h']:
+        if rate == RATE_VALUES['h']:
             high_cost_dates.append(work_date)
         else:
             low_cost_dates.append(work_date)
@@ -90,16 +99,33 @@ while not input_done:
 print(low_cost_dates)
 print(high_cost_dates)
 
+# Remove duplicates and keep HIGH COST days when there is an overlap
 all_dates_and_rates = []
 for date in high_cost_dates:
-    record = (date, rate_values['h'])
+    record = (date, RATE_VALUES['h'])
     if record not in all_dates_and_rates:
         all_dates_and_rates.append(record)
 for date in low_cost_dates:
-    record = (date, rate_values['l'])
+    record = (date, RATE_VALUES['l'])
     if date not in high_cost_dates and record not in all_dates_and_rates:
         all_dates_and_rates.append(record)
 
+# Sort the de-duped list
 sorted_dates = sorted(all_dates_and_rates, key=lambda x: x[0])
 print(sorted_dates)
 
+print(sorted_dates[0][0])
+# Search for gaps to determine extra travel days
+sorted_dates[0] = sorted_dates[0] + ('Travel',)
+sorted_dates[len(sorted_dates) - 1] = sorted_dates[len(sorted_dates) - 1] + ('Travel',)
+
+for i in range(len(sorted_dates) - 1):
+    if i == 0 or i == len(sorted_dates) - 1:
+        sorted_dates[i] = sorted_dates[i] + ('Travel',)
+    else:
+        current_work_day = sorted_dates[i][0]
+        next_day = current_work_day + ONE_DAY
+        next_work_day = sorted_dates[i+1][0]
+        if next_work_day != next_day:
+            sorted_dates[i]
+            sorted_dates[i + 1]
