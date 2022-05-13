@@ -27,3 +27,7 @@ You have a set of projects, and you need to calculate a reimbursement amount for
 
 * Follow the prompts to enter the required information for each project to be calculated.
 * When all data is entered, the program will calculate each day's reimbursement cost, as well as the overall reimbursement amount for the project set.
+
+* To run test scenarios:
+ 
+        python ReimbursementCalculator.py test
