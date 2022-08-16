@@ -1,0 +1,24 @@
+# buildspec.yml
+version: 0.2
+env:
+  variables:
+    git_url: "git@github.com:mobsy74/reimbursement-calculator.git"
+  parameter-store:
+    ssh_key: id_rsa
+phases:
+  pre_build:
+    commands:   
+      - mkdir -p ~/.ssh
+      - echo "$ssh_key" > ~/.ssh/id_rsa   
+      - chmod 600 ~/.ssh/id_rsa
+      - eval "$(ssh-agent -s)"
+      - git init
+      - git remote add origin "$git_url"
+      - git fetch origin
+      - git branch
+      - git checkout -t origin/main
+  build:
+    commands:
+      - echo In the build phase
+      - pwd
+      - ls -l
